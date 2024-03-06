@@ -3,7 +3,7 @@
 pack web statics
 """
 import os
-from fabric.api import local, runs_once
+from fabric.api import env, local, put, run, runs_once
 from datetime import datetime
 
 
