@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# web to server
+# web srt.
 
-sudo apt-get update
-sudo apt-get install -y nginx
+apt-get update
+apt-get install -y nginx
 
 mkdir -p /data/web_static/releases/test/
 mkdir -p /data/web_static/shared/
@@ -23,7 +23,7 @@ printf %s "server {
         index index.html index.htm;
     }
     location /redirect_me {
-        return 301 https://github.com/mohamed-bo;
+        return 301 http://intranet.alxswe.com/projects/288;
     }
     error_page 404 /404.html;
     location /404 {
