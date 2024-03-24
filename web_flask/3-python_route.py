@@ -23,11 +23,9 @@ def cPath(text):
     return 'C {}'.format(text.replace('_', ' '))
 
 
-
-
-@app.route('/python/<text>')
-@app.route('/python', defaults={'text': 'is cool'})
-def pythonPath(text):
+@app.route('/python', strict_slashes=False)
+@app.route('/python/<text>', strict_slashes=False)
+def pythonPath(text='is cool'):
     '''python Path'''
     return 'Python {}'.format(text.replace('_', ' '))
 
