@@ -48,12 +48,14 @@ def numberTemplatePath(n):
 
 
 @app.route('/number_odd_or_even/<int:n>', strict_slashes=False)
-def number_odd_or_even(n):
-    '''numberoddor even'''
-    diction = {
-        'n': n
-    }
-    return render_template('6-number_odd_or_even.html', **diction)
+def numberOddEven(n):
+    """numberOddEven"""
+    if n % 2 == 0:
+        statueOfNumber = 'even'
+    else:
+        statueOfNumber = 'odd'
+    return render_template('6-number_odd_or_even.html', n=n,
+                           statueOfNumber=statueOfNumber)
 
 
 if __name__ == '__main__':
