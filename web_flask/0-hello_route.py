@@ -9,7 +9,7 @@ def hello_hbnb():
     """ Prints hello HBNB """
     return 'Hello HBNB!'
 
+
 if __name__ == "__main__":
     """main functyion"""
     app.run(host='0.0.0.0', port=5000)
-
