@@ -19,11 +19,11 @@ class FileStorage:
     def all(self, cls=None):
         """all"""
         if cls is not None:
-            if type(cls) == str:
+            if type(cls) is str:
                 cls = eval(cls)
             dictona = {}
             for key, value in self.__objects.items():
-                if type(v) == cls:
+                if type(value) is cls:
                     dictona[key] = value
             return dictona
         return self.__objects

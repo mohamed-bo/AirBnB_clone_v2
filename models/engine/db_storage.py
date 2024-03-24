@@ -17,7 +17,6 @@ from models.user import User
 
 class DBStorage:
     """databse class"""
-
     __engine = None
     __session = None
 
@@ -42,7 +41,7 @@ class DBStorage:
             objs.extend(self.__session.query(Review).all())
             objs.extend(self.__session.query(Amenity).all())
         else:
-            if type(cls) == str:
+            if type(cls) is str:
                 cls = eval(cls)
             objs = self.__session.query(cls)
         return {"{}.{}".format(type(o).__name__, o.id): o for o in objs}
@@ -64,7 +63,7 @@ class DBStorage:
         """reload"""
         Base.metadata.create_all(self.__engine)
         sessFACT = sessionmaker(bind=self.__engine,
-                                       expire_on_commit=False)
+                                expire_on_commit=False)
         Session = scoped_session(sessFACT)
         self.__session = Session()
 
