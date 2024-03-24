@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 
 @app.route('/', strict_slashes=False)
-def hello_hbnb():
+def home():
     """ Prints hello HBNB """
     return 'Hello HBNB!'
 
