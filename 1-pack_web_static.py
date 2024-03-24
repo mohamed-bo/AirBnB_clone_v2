@@ -5,7 +5,7 @@ pack web statics
 import os
 from fabric.api import env, local, put, run, runs_once
 from datetime import datetime
-
+env.hosts = ['100.25.3.60', '100.26.157.67']
 
 @runs_once
 def do_pack():
