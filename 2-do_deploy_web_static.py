@@ -1,56 +1,30 @@
 #!/usr/bin/python3
 """
-pack web statics
+Fabric script based on the file 1-pack_web_static.py that distributes an
+archive to the web servers
 """
-import os
-from fabric.api import env, local, put, run, runs_once
-from datetime import datetime
-env.hosts = ['100.25.3.60', '100.26.157.67']
 
-@runs_once
-def do_pack():
-    """Archives static"""
-    if not os.path.isdir("versions"):
-        os.mkdir("versions")
-    nowtime = datetime.now()
-    output = "versions/web_static_{}{}{}{}{}{}.tgz".format(
-        nowtime.year,
-        nowtime.month,
-        nowtime.day,
-        nowtime.hour,
-        nowtime.minute,
-        nowtime.second
-    )
-    try:
-        print("Packing web_static to {}".format(output))
-        local("tar -cvzf {} web_static".format(output))
-        outsize = os.stat(output).st_size
-        print("web_static packed: {} -> {} Bytes".format(output, outsize))
-    except Exception:
-        output = None
-    return output
+from fabric.api import put, run, env
+from os.path import exists
+env.hosts = ['142.44.167.228', '144.217.246.195']
 
 
 def do_deploy(archive_path):
-    """
-    deploy static
-    """
-    if not os.path.exists(archive_path):
+    """distributes an archive to the web servers"""
+    if exists(archive_path) is False:
         return False
-    filee = os.path.basename(archive_path)
-    folder = filee.replace(".tgz", "")
-    fullPathextr = "/data/web_static/releases/{}/".format(folder)
     try:
-        put(archive_path, "/tmp/{}".format(filee))
-        run("sudo mkdir -p {}".format(fullPathextr))
-        run("sudo tar -xzf /tmp/{} -C {}".format(filee, fullPathextr))
-        run("sudo rm -rf /tmp/{}".format(filee))
-        run("sudo mv {}web_static/* {}".format(fullPathextr, fullPathextr))
-        run("sudo rm -rf {}web_static".format(fullPathextr))
-        run("sudo rm -rf /data/web_static/current")
-        run("sudo ln -s {} /data/web_static/current".format(fullPathextr))
-        
-        print('New version deployed!')
+        file_n = archive_path.split("/")[-1]
+        no_ext = file_n.split(".")[0]
+        path = "/data/web_static/releases/"
+        put(archive_path, '/tmp/')
+        run('mkdir -p {}{}/'.format(path, no_ext))
+        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
+        run('rm /tmp/{}'.format(file_n))
+        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
+        run('rm -rf {}{}/web_static'.format(path, no_ext))
+        run('rm -rf /data/web_static/current')
+        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
         return True
-    except Exception:
+    except:
         return False

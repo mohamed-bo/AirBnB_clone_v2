@@ -1,78 +1,75 @@
 #!/usr/bin/python3
-"""The base model
-Returns:
-    any: anything
 """
-import uuid
-from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, DateTime, String
+Contains class BaseModel
+"""
 
-Base = declarative_base()
+from datetime import datetime
+import models
+from os import getenv
+import sqlalchemy
+from sqlalchemy import Column, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+import uuid
+
+time = "%Y-%m-%dT%H:%M:%S.%f"
+
+if models.storage_t == "db":
+    Base = declarative_base()
+else:
+    Base = object
+
 
 class BaseModel:
-    """_summary_
-
-    Returns:
-        _type_: _description_
-    """
-
-    id = Column(String(60), primary_key=True, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    """The BaseModel class from which future classes will be derived"""
+    if models.storage_t == "db":
+        id = Column(String(60), primary_key=True)
+        created_at = Column(DateTime, default=datetime.utcnow)
+        updated_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, *args, **kwargs):
-        """Instantiates a new base model that will be inherted"""
-        self.id = str(uuid.uuid4())
-        if not kwargs:
-            self.created_at = datetime.utcnow()
-            self.updated_at = datetime.utcnow()
+        """Initialization of the base model"""
         if kwargs:
-            date_formate = "%Y-%m-%dT%H:%M:%S.%f"
-            for k, v in kwargs.items():
-                if k == "created_at" or k == "updated_at":
-                    v = datetime.strptime(v, date_formate)
-                if hasattr(self, k):
-                    setattr(self, k, v)
+            for key, value in kwargs.items():
+                if key != "__class__":
+                    setattr(self, key, value)
+            if kwargs.get("created_at", None) and type(self.created_at) is str:
+                self.created_at = datetime.strptime(kwargs["created_at"], time)
+            else:
+                self.created_at = datetime.utcnow()
+            if kwargs.get("updated_at", None) and type(self.updated_at) is str:
+                self.updated_at = datetime.strptime(kwargs["updated_at"], time)
+            else:
+                self.updated_at = datetime.utcnow()
+            if kwargs.get("id", None) is None:
+                self.id = str(uuid.uuid4())
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.utcnow()
+            self.updated_at = self.created_at
 
     def __str__(self):
-        """Function to make the obj string
-
-        Returns:
-            String: Object as a string
-        """
-        str_cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        return f'[{str_cls}] ({self.id}) {self.__dict__}'
+        """String representation of the BaseModel class"""
+        return "[{:s}] ({:s}) {}".format(self.__class__.__name__, self.id,
+                                         self.__dict__)
 
     def save(self):
-        """To save the new objs
-        """
-        from models import storage
+        """updates the attribute 'updated_at' with the current datetime"""
         self.updated_at = datetime.utcnow()
-        storage.new(self)
-        storage.save()
+        models.storage.new(self)
+        models.storage.save()
 
     def to_dict(self):
-        """_summary_
-
-        Returns:
-            _type_: _description_
-        """
-        trans_dict = {}
-        trans_dict.update(self.__dict__)
-        trans_dict.update({'__class__':
-                         (str(type(self)).split('.')[-1]).split('\'')[0]})
-        trans_dict['created_at'] = self.created_at.isoformat()
-        trans_dict['updated_at'] = self.updated_at.isoformat()
-        try:
-            if trans_dict["_sa_instance_state"]:
-                del trans_dict["_sa_instance_state"]
-        except Exception:
-            pass
-        return trans_dict
+        """returns a dictionary containing all keys/values of the instance"""
+        new_dict = self.__dict__.copy()
+        if "created_at" in new_dict:
+            new_dict["created_at"] = new_dict["created_at"].strftime(time)
+        if "updated_at" in new_dict:
+            new_dict["updated_at"] = new_dict["updated_at"].strftime(time)
+        new_dict["__class__"] = self.__class__.__name__
+        if "_sa_instance_state" in new_dict:
+            del new_dict["_sa_instance_state"]
+        return new_dict
 
     def delete(self):
-        """Function that delete an obj
-        """
-        from models import storage
-        storage.delete(self)
+        """delete the current instance from the storage"""
+        models.storage.delete(self)
